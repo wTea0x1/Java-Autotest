@@ -5,11 +5,9 @@
 # Email : warmTea0x1@gmail.com
 # License : GPLv3
 import sys
-PARAMETER_SINGLE = ("h", "v", "m", "i", "o")
-PARAMETER_DOUBLE = ("help", "version")
 VERSION = '''*******************************************************
 * Author   : wTea                                     *
-* Vesrion  : 0.1-beta                                 *
+* Vesrion  : 0.1.1-beta                               *
 * Homepage : https://github.com/wTea0x1/Java*Autotest *
 * Email    : warmTea0x1@gmail.com                     *
 * License  : GPLv3                                    *
@@ -39,7 +37,17 @@ Options:
     -h,--help
        Show this message
 '''
+# Single character parameters
+# These parameter has one '-' in front them
+# Notice that those don't need a value should in the front
+PARAMETER_SINGLE = ("h", "v", "m", "i", "o")
 
+# Parameters which are fronted by double '-'
+# Every parameter's index should be same as their abbreviation's
+
+PARAMETER_DOUBLE = ("help", "version")
+
+# postion of each parameter
 parameter = [0, 0, 0, 0, 0]
 
 
@@ -47,37 +55,84 @@ def parameter_check(argv):
     global parameter
     global PARAMETER_SINGLE
     global PARAMETER_DOUBLE
-    find = False
     for i in range(1, len(argv)):
         if len(argv[i]) > 1 and argv[i][0] == '-' and argv[i][1] != '-':
-            for j in range(0, len(PARAMETER_SINGLE)):
-                if PARAMETER_SINGLE[j] in argv[i]:
-                    parameter[j] = i
-                    find = True
+            for j in range(1, len(argv[i])):
+                if argv[i][j] in PARAMETER_SINGLE:
+                    parameter[PARAMETER_SINGLE.index(argv[i][j])] = i
+                else:
+                    return False
         elif len(argv[i]) > 2 and argv[i][0:2] == "--":
             for j in range(0, len(PARAMETER_DOUBLE)):
                 if PARAMETER_DOUBLE[j] == argv[i][2:]:
                     parameter[j] = i
-                    find = True
-    return find
+            else:
+                return False
+    return True
 
 
 def validity_check(argv):
     global parameter
+    # No args given
+    if len(argv) <= 1:
+        return False
+
+    # To find path's index in argv
+    pathAt = [1] * len(argv)
+
+    # Exclude the postion of -v -h
+    for i in range(0, 2):
+        pathAt[parameter[i]] = 0
+
+    # with -v or(and) -h, only print messages
+    vh = 0
+    if parameter[0]:
+        vh -= 1
+    if parameter[1]:
+        vh -= 2
+    if vh:
+        return vh
+
+    # along with their value
     for i in range(2, len(parameter)):
-        if parameter[i] + 1 in parameter and parameter[i] != 0:
+        if parameter[i] == 0:  # Parameter not exists
+            continue
+        if parameter[i] + 1 in parameter:  # No value set
             return False
-        if parameter[i] + 1 >= len(argv) and parameter[i] != 0:
+        if parameter[i] + 1 >= len(argv):  # No value set
             return False
-    return True
+        pathAt[parameter[i]] = 0  # Exclude other parameter's postion
+        pathAt[parameter[i] + 1] = 0  # Along with their values
+
+    # If path exists, return its index
+    if pathAt.count(1) > 0:
+        return pathAt.index(1)
+    else:
+        return False
 
 
-find = parameter_check(sys.argv)
+parIsRight = parameter_check(sys.argv)
+if not parIsRight:
+    print("Unknown parameter. Please see the help message below\n")
+    print(HELP)
+    exit(-1)
+
+find = validity_check(sys.argv)
+
 if not find:
-    print("Invalid input\nPlease see the help message below\n")
+    print("No PATH set or wrong use of options\n"\
+          + "Please see the help message below\n")
     print(HELP)
+    exit(-1)
+
+if find < 0:
+    find = -find
+    if find % 2 == 1:
+        print(HELP)
+    find = find >> 1
+    if find % 2 == 1:
+        print(VERSION)
     exit(0)
-if not validity_check(sys.argv):
-    print("Invalid input\nPlease see the help message below\n")
-    print(HELP)
-    exit(0)
+
+path = sys.argv[find]
+print(path)
