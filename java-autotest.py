@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # Author : wTea
-# Vesrion : 0.1-beta
+# Vesrion : 0.1.1-beta
 # Homepage : https://github.com/wTea0x1/Java-Autotest
 # Email : warmTea0x1@gmail.com
 # License : GPLv3
@@ -40,43 +40,44 @@ Options:
        Show this message
 '''
 
-PARAMETER = [0, 0, 0, 0, 0]
+parameter = [0, 0, 0, 0, 0]
 
 
-def match_single(string, argPos):
-    global PARAMETER
+def parameter_check(argv):
+    global parameter
     global PARAMETER_SINGLE
     global PARAMETER_DOUBLE
-    for i in range(0, len(PARAMETER_SINGLE)):
-        for j in range(1, len(string)):
-            if string[j] == PARAMETER_SINGLE[i]:
-                PARAMETER[i] = argPos
-
-
-def match_double(string, argPos):
-    global PARAMETER
-    global PARAMETER_SINGLE
-    global PARAMETER_DOUBLE
-    for i in range(0, len(PARAMETER_DOUBLE)):
-        if string[2:len(string)] == PARAMETER_DOUBLE[i]:
-            PARAMETER[i] = argPos
-            break
-
-
-def parameter_analyse(argv):
-    global PARAMETER
-    global PARAMETER_SINGLE
-    global PARAMETER_DOUBLE
-    for i in range(0, len(argv)):
+    find = False
+    for i in range(1, len(argv)):
         if len(argv[i]) > 1 and argv[i][0] == '-' and argv[i][1] != '-':
-            match_single(argv[i], i)
+            for j in range(0, len(PARAMETER_SINGLE)):
+                if PARAMETER_SINGLE[j] in argv[i]:
+                    parameter[j] = i
+                    find = True
         elif len(argv[i]) > 2 and argv[i][0:2] == "--":
-            match_double(argv[i], i)
+            for j in range(0, len(PARAMETER_DOUBLE)):
+                if PARAMETER_DOUBLE[j] == argv[i][2:]:
+                    parameter[j] = i
+                    find = True
+    return find
 
-    if(PARAMETER[0] != 0):
-        print(HELP)
-    if(PARAMETER[1] != 0):
-        print(VERSION)
+
+def validity_check(argv):
+    global parameter
+    for i in range(2, len(parameter)):
+        if parameter[i] + 1 in parameter and parameter[i] != 0:
+            return False
+        if parameter[i] + 1 >= len(argv) and parameter[i] != 0:
+            return False
+    return True
 
 
-parameter_analyse(sys.argv)
+find = parameter_check(sys.argv)
+if not find:
+    print("Invalid input\nPlease see the help message below\n")
+    print(HELP)
+    exit(0)
+if not validity_check(sys.argv):
+    print("Invalid input\nPlease see the help message below\n")
+    print(HELP)
+    exit(0)
