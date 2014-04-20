@@ -5,6 +5,10 @@
 # Email : warmTea0x1@gmail.com
 # License : GPLv3
 import sys
+import os
+import re
+
+
 VERSION = '''*******************************************************
 * Author   : wTea                                     *
 * Vesrion  : 0.1.1-beta                               *
@@ -111,6 +115,26 @@ def validity_check(argv):
         return False
 
 
+def set_input(path):
+    global parameter
+    global PARAMETER_SINGLE
+    input = parameter[PARAMETER_SINGLE.index("i")]
+    if input == 0:
+        return path + os.sep + "input.txt"
+    else:
+        return path + os.sep + sys.argv[input + 1]
+
+
+def set_output(path):
+    global parameter
+    global PARAMETER_SINGLE
+    output = parameter[PARAMETER_SINGLE.index("o")]
+    if output == 0:
+        return path + os.sep + "output.txt"
+    else:
+        return path + os.sep + sys.argv[output + 1]
+
+
 parIsRight = parameter_check(sys.argv)
 if not parIsRight:
     print("Unknown parameter. Please see the help message below\n")
@@ -134,5 +158,41 @@ if find < 0:
         print(VERSION)
     exit(0)
 
+# Set and check root dir
 path = sys.argv[find]
-print(path)
+if not os.path.isdir(path):
+    print("Directory doesn't exist!")
+    exit(-1)
+
+# Set and check input file
+input = set_input(path)
+if not os.path.isfile(input):
+    print("Input file doesn't exist!")
+    exit(-1)
+
+# Set output file
+# If already exists, del it and create a new one
+output = set_output(path)
+if os.path.isfile(output):
+    os.remove(output)
+os.mknod(output)
+
+# Get all java source file
+regex = ".*\.java"
+files = os.listdir(path)
+javaSource = list()
+for file in files:
+    if re.match(regex, file):
+        javaSource.append(file)
+
+# Create bin directory
+# If already exists, empty it
+binDir = path + os.sep + "bin"
+if os.path.isdir(binDir):
+    bins = os.listdir(binDir)
+    for toDel in bins:
+        os.remove(binDir + os.sep + toDel)
+else:
+    os.mkdir(binDir)
+
+# Compile all java source file
