@@ -135,6 +135,24 @@ def set_output(path):
         return path + os.sep + sys.argv[output + 1]
 
 
+# Return main if set of found
+# Else return False
+def search_main(path):
+    global parameter
+    main_at = parameter[2]
+    if main_at:
+        main = sys.argv[main_at]
+        return main
+    bin_dir = path + os.sep + "bin"
+    class_file = os.listdir(bin_dir)
+    regex = ".*[Mm][Aa][Ii][Nn].*\.class"
+    for file in class_file:
+        if re.match(regex, file):
+            main = file
+            return main
+    return False
+
+
 parIsRight = parameter_check(sys.argv)
 if not parIsRight:
     print("Unknown parameter. Please see the help message below\n")
@@ -180,19 +198,53 @@ os.mknod(output)
 # Get all java source file
 regex = ".*\.java"
 files = os.listdir(path)
-javaSource = list()
+java_source = ""
 for file in files:
     if re.match(regex, file):
-        javaSource.append(file)
+        java_source = java_source + path + os.sep + file + " "
 
 # Create bin directory
 # If already exists, empty it
-binDir = path + os.sep + "bin"
-if os.path.isdir(binDir):
-    bins = os.listdir(binDir)
+bin_dir = path + os.sep + "bin"
+if os.path.isdir(bin_dir):
+    bins = os.listdir(bin_dir)
     for toDel in bins:
-        os.remove(binDir + os.sep + toDel)
+        os.remove(bin_dir + os.sep + toDel)
 else:
-    os.mkdir(binDir)
+    os.mkdir(bin_dir)
 
 # Compile all java source file
+os.system("javac -d {0} {1}".format(bin_dir, java_source))
+
+# Set main class
+main_class = search_main(path)
+if not main_class:
+    print("No main class found.")
+    exit(-1)
+dot = main_class.index(".")
+main_name = main_class[:dot]
+
+# Create MANIFEST.MF
+path_mani = bin_dir + os.sep + "MANIFEST.MF"
+if os.path.isfile(path_mani):
+    os.remove(path_mani)
+manifest = open(path_mani, "w")
+manifest.write("Manifest-Version: 1.0\n")
+manifest.write("Main-Class: {0}\n".format(main_name))
+manifest.write("Class-path: .")
+manifest.close()
+
+# Create jar package
+jar = "autotest.jar"
+class_list = ""
+for file in os.listdir(bin_dir):
+    if re.match(".*\.class", file):
+        class_list = class_list + file + " "
+if os.path.isfile(bin_dir + os.sep + jar):
+    os.remove(bin_dir + os.sep + jar)
+os.chdir(bin_dir)
+os.system("jar cvfm {0} MANIFEST.MF {1}".format(jar, class_list))
+
+# Read inputs from input file
+# Also write result in output file
+# need to do
