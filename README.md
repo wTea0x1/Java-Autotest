@@ -40,6 +40,7 @@ python java-autotest.py path/to/dir [options]
            输出帮助信息
 
 例子：
+
         python java-autotest.py "D:\java"
         python java-autotest.py "D:\java" -i in.txt -o out.txt -m elevator
 
@@ -47,14 +48,19 @@ python java-autotest.py path/to/dir [options]
 -----------------------
 输入文件需要符合下述规则：
 > 每行有且只有一个输入
+
 > 每行开头需要有 "标示符:"
+
 >   标示符可以任意设定成非：的字符。
+
 >   标示符会被输出到输出文件以方便查看
+
 >   标示符可以为空，即输入":"
+
 > 请不要留空行，这样可能导致程序报错
 
 bug report
 ------------------
-仓促之间完成，bug可能比较多
+仓促之间完成，bug可能比较多。
 如果大家发现了什么bug，欢迎来[这里](https://github.com/wTea0x1/Java-Autotest/issue)提交bug,
 也欢迎大家帮我修改程序并提交至github
