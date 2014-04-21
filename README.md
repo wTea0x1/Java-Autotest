@@ -47,5 +47,6 @@ options有：
 五、bug report
 仓促之间完成，bug可能比较多
 如果大家发现了什么bug，欢迎来
-https://github.com/wTea0x1/Java-Autotest/issues提交
+https://github.com/wTea0x1/Java-Autotest/issues
+提交bug
 也欢迎大家帮我修改程序并提交至github
