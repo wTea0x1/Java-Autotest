@@ -120,9 +120,9 @@ def set_input(path):
     global PARAMETER_SINGLE
     input = parameter[PARAMETER_SINGLE.index("i")]
     if input == 0:
-        return path + os.sep + "input.txt"
+        return path + "input.txt"
     else:
-        return path + os.sep + sys.argv[input + 1]
+        return path + sys.argv[input + 1]
 
 
 def set_output(path):
@@ -130,9 +130,9 @@ def set_output(path):
     global PARAMETER_SINGLE
     output = parameter[PARAMETER_SINGLE.index("o")]
     if output == 0:
-        return path + os.sep + "output.txt"
+        return path + "output.txt"
     else:
-        return path + os.sep + sys.argv[output + 1]
+        return path + sys.argv[output + 1]
 
 
 # Return main if set of found
@@ -247,4 +247,30 @@ os.system("jar cvfm {0} MANIFEST.MF {1}".format(jar, class_list))
 
 # Read inputs from input file
 # Also write result in output file
-# need to do
+in_file = open(input, "r")
+out_file = open(output, "w")
+while True:
+    line = in_file.readline()
+    if not len(line):
+        break
+    if ':' in line:
+        colon = line.index(':')
+    else:
+        print("Input file format error")
+        exit(-1)
+    if '\n' in line:
+        nextline = line.index('\n')
+    else:
+        nextline = 0
+    if colon + 1 >= len(line):
+        cmd = "java -jar autotest.jar &>> {0}".format(output)
+    else:
+        if not nextline:
+            cmd = "java -jar autotest.jar {0} &>> {1}".format(\
+                    line[colon + 1:], output)
+        else:
+            cmd = "java -jar autotest.jar {0} &>> {1}".format(\
+                    line[colon + 1:nextline], output)
+    out_file.write(line[:colon] + ":\n")
+    os.system(cmd)
+in_file.close()
